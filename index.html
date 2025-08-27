@@ -12,7 +12,7 @@
       rel="stylesheet"
     />
     <!-- Chosen Palette: Trustworthy Blue & Professional Gray -->
-    <!-- Application Structure Plan: A persuasive, single-page proposal website designed to convince stakeholders. 1. The Problem: Illustrates the current "vendor black box" situation and its risks (lock-in, data asset loss, and now, lack of access control). 2. The Vision: Presents the in-house pipeline architecture as the solution for data sovereignty, now featuring the detailed, interactive .NET-based technical diagrams. 3. Strategic Value: Uses interactive cards to detail the core benefits of building in-house, directly addressing the stated problem. 4. Phased Rollout: A practical roadmap to make the project feel achievable. This structure logically moves from problem to solution to tangible benefits and a concrete plan of action. -->
+    <!-- Application Structure Plan: A persuasive, single-page proposal website designed to convince stakeholders. 1. The Problem: Illustrates the current "vendor black box" situation and its risks (lock-in, data asset loss, and now, lack of access control). 2. The Vision: Presents the in-house pipeline architecture as the solution for data sovereignty, now featuring the detailed, interactive .NET-based technical diagrams. 3. Strategic Value: Uses interactive cards to detail the core benefits of building in-house, directly addressing the stated problem. 4. Phased Rollout: A practical roadmap to make the project feel achievable. 5. Final Vision: A new section to frame advanced features as future goals. This structure logically moves from problem to solution to tangible benefits and a concrete plan of action, culminating in a future vision. -->
     <!-- Visualization & Content Choices: 1. Vendor Black Box & Access Control Failure Diagrams: Static diagrams to clearly frame the core problems. 2. NEW DETAILED ARCHITECTURE DIAGRAMS: Replaced the abstract diagrams with detailed, interactive HTML/CSS diagrams for both Ingestion and Inference pipelines, based on the .NET stack. Hover tooltips provide technical specifics for each component. This directly visualizes the feasibility and technical plan. 3. Siloed vs. Unified Comparison: Kept this diagram to directly refute the vendor's flawed proposal. All choices use HTML/CSS, avoiding SVG/Mermaid. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
@@ -112,14 +112,6 @@
         visibility: visible;
         opacity: 1;
       }
-      .tab-button {
-        transition: all 0.3s ease;
-      }
-      .tab-button.active {
-        background-color: #0284c7;
-        color: #ffffff;
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-      }
     </style>
   </head>
   <body class="antiasaed">
@@ -131,6 +123,7 @@
           <a href="#vision" class="nav-link">우리의 미래</a>
           <a href="#value" class="nav-link">전략적 가치</a>
           <a href="#roadmap" class="nav-link">실행 계획</a>
+          <a href="#future-vision" class="nav-link">최종 비전</a>
         </div>
       </nav>
     </header>
@@ -329,13 +322,13 @@
                 <div class="space-y-4 text-center">
                   <h4 class="font-bold text-slate-600">4. 데이터 처리</h4>
                   <div class="arch-box h-full">
-                    <span class="font-bold">.NET 라이브러리</span>
+                    <span class="font-bold">.NET 라이브러리 (Multi-modal Parser)</span>
                     <div class="tooltip">
                       수집된 데이터를 파싱하고 의미 단위(Chunk)로 분할합니다.<br />
                       <strong class="text-violet-300">Excel/Word:</strong> DocumentFormat.OpenXml<br />
                       <strong class="text-violet-300">PDF:</strong> iText7-community<br />
-                      <strong class="text-violet-300">HWP:</strong> Hwp-Parser-dotnet<br />
-                      <strong class="text-violet-300">HTML/JSON:</strong> HtmlAgilityPack, Newtonsoft.Json
+                      <strong class="text-violet-300">Image/Chart:</strong> multi-modal 모델(e.g., GPT-4V, LLaVA)을
+                      활용하여 이미지 내 텍스트와 표를 추출합니다.
                     </div>
                   </div>
                 </div>
@@ -402,13 +395,13 @@
                 <div class="space-y-4 text-center">
                   <h4 class="font-bold text-slate-600">3. 지능형 필터링 (핵심 로직)</h4>
                   <div class="arch-box bg-emerald-100 border-emerald-300">
-                    <span class="font-bold">RAG Application</span>
+                    <span class="font-bold">RAG Application & Tool Executor</span>
                     <div class="tooltip">
                       <strong class="text-emerald-300">1. 권한 검사:</strong> 인증 토큰으로 사용자 역할/부서 확인<br />
                       <strong class="text-emerald-300">2. 벡터 검색:</strong> 사용자 권한을 메타데이터 필터 조건으로
                       추가하여 Vector DB 검색<br />
-                      <strong class="text-emerald-300">3. 프롬프트 설계:</strong> 검색된 정보와 질문을 조합하여 프롬프트
-                      생성<br />
+                      <strong class="text-emerald-300">3. 도구 사용:</strong> '수수료 계산' 등 특정 작업이 필요할 경우,
+                      LLM이 판단하여 Tool Executor(계산 엔진 등)를 호출합니다.<br />
                       <strong class="text-emerald-300">4. 후처리/마스킹:</strong> LLM 답변에서 민감정보 최종 검사 및
                       마스킹
                     </div>
@@ -427,69 +420,6 @@
                     <strong class="text-emerald-300">Cloud API:</strong> OpenAI API를 호출하는 옵션도 선택 가능합니다.
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-          <!-- Tech Deep Dive -->
-          <div class="mt-16">
-            <h3 class="text-2xl font-bold text-center mb-8 text-slate-700">핵심 기술 심층 분석</h3>
-            <div class="max-w-4xl mx-auto">
-              <div class="flex justify-center border-b border-gray-200 mb-8">
-                <button class="tab-button py-2 px-4 font-medium text-gray-600 rounded-t-lg active" data-tab="pipeline">
-                  데이터 파이프라인
-                </button>
-                <button class="tab-button py-2 px-4 font-medium text-gray-600 rounded-t-lg" data-tab="embedding">
-                  임베딩
-                </button>
-                <button class="tab-button py-2 px-4 font-medium text-gray-600 rounded-t-lg" data-tab="vectordb">
-                  벡터 DB와 검색
-                </button>
-                <button class="tab-button py-2 px-4 font-medium text-gray-600 rounded-t-lg" data-tab="rag">
-                  고급 RAG
-                </button>
-              </div>
-              <div id="pipeline" class="tab-content bg-slate-50 p-6 rounded-b-lg rounded-tr-lg">
-                <h4 class="font-bold text-lg mb-2 text-sky-800">자산 중심(Asset-centric) 파이프라인</h4>
-                <p class="text-sm text-slate-600">
-                  전통적인 파이프라인은 '작업'의 성공 여부에만 집중합니다. 하지만 AI 시스템에서는 작업의 결과물인
-                  '데이터 자산'(예: 정제된 데이터셋, 임베딩 모델, 벡터 인덱스)의 품질과 버전, 그리고 그 관계(계보)를
-                  추적하는 것이 훨씬 중요합니다. 우리가 Hangfire를 이용해 구축할 파이프라인은 각 단계의 결과물을 버전
-                  관리되는 '자산'으로 취급하여, 문제 발생 시 "어떤 작업이 실패했는가?"를 넘어 "어떤 버전의 데이터
-                  자산에서 문제가 시작되었는가?"를 추적할 수 있는 강력한 관찰 가능성을 제공합니다.
-                </p>
-              </div>
-              <div id="embedding" class="tab-content bg-slate-50 p-6 rounded-b-lg rounded-tr-lg hidden">
-                <h4 class="font-bold text-lg mb-2 text-sky-800">문맥적(Contextual) 임베딩의 중요성</h4>
-                <p class="text-sm text-slate-600">
-                  과거의 임베딩 기술은 '은행'이라는 단어를 '금융 기관'과 '강둑'의 의미를 구분하지 못하고 하나의 벡터로
-                  표현했습니다. 하지만 우리가 사용할 Sentence Transformer와 같은 최신 '문맥적' 임베딩 모델은 문장 전체의
-                  의미를 파악하여 "은행에 돈을 입금했다"와 "강둑에 앉아있다"의 '은행'을 완전히 다른 벡터로 표현합니다.
-                  이는 사용자의 미묘한 질문 의도를 정확하게 이해하고, 가장 관련성 높은 정보를 찾아내는 RAG 시스템의 핵심
-                  성능과 직결됩니다.
-                </p>
-              </div>
-              <div id="vectordb" class="tab-content bg-slate-50 p-6 rounded-b-lg rounded-tr-lg hidden">
-                <h4 class="font-bold text-lg mb-2 text-sky-800">메타데이터 필터링: 단순 검색을 넘어서</h4>
-                <p class="text-sm text-slate-600">
-                  벡터 DB의 핵심은 단순히 '비슷한' 문서를 찾는 것을 넘어, '특정 조건을 만족하는 문서 중에서 비슷한'
-                  문서를 찾는 능력에 있습니다. 우리가 Qdrant를 채택하는 이유는 바로 이 '메타데이터 필터링' 성능이
-                  뛰어나기 때문입니다. 모든 데이터 조각(벡터)은 "이 데이터는 인사팀 전용" 또는 "이 계약 정보는 팀장급
-                  이상만 열람 가능"과 같은 메타데이터와 함께 저장됩니다. 검색 시, 시스템은 사용자의 권한을 먼저 확인하고
-                  이 메타데이터를 필터 조건으로 사용하여 검색하므로, 애초에 권한이 없는 정보는 검색 결과 후보군에서
-                  원천적으로 제외됩니다.
-                </p>
-              </div>
-              <div id="rag" class="tab-content bg-slate-50 p-6 rounded-b-lg rounded-tr-lg hidden">
-                <h4 class="font-bold text-lg mb-2 text-sky-800">지능형 필터링: 하드코딩을 뛰어넘는 기술</h4>
-                <p class="text-sm text-slate-600">
-                  업체가 제안하는 '"나의" 키워드' 방식은 원시적인 하드코딩입니다. 우리가 구축할 '지능형 필터링' 계층은
-                  다음과 같은 고급 RAG 기술을 구현합니다.<br />
-                  - **쿼리 변환:** 사용자가 "내 실적 보여줘"라고 질문하면, 시스템은 사용자의 인증 정보를 바탕으로 질문을
-                  "영업 1팀의 김철수 팀장의 2025년 8월 실적 데이터를 찾아줘"와 같이 시스템이 이해하기 쉬운 명확한 쿼리로
-                  자동 변환합니다.<br />
-                  - **재순위화:** 1차로 넓게 검색된 결과 중에서, 어떤 문서가 사용자의 질문 의도와 가장 정확하게
-                  일치하는지 한 번 더 정밀하게 분석하여 순위를 재조정합니다. 이를 통해 답변의 정확도를 극대화합니다.
-                </p>
               </div>
             </div>
           </div>
@@ -527,17 +457,17 @@
             </p>
           </div>
           <div class="card p-6">
-            <div class="text-4xl mb-4">🕊️</div>
-            <h3 class="text-xl font-bold mb-3">벤더로부터의 독립</h3>
+            <div class="text-4xl mb-4">🏆</div>
+            <h3 class="text-xl font-bold mb-3">AI 기반 규정 준수 및 영업 지원</h3>
             <p class="text-gray-600 text-sm">
-              업체를 바꾸더라도 우리의 핵심 자산인 벡터 DB는 그대로 유지됩니다. 우리는 언제든 최고의 기술을 가진
-              파트너와 자유롭게 협력할 수 있는 힘을 갖게 됩니다.
+              정확한 출처에 기반한 답변과 자동화된 수수료 계산을 통해 불완전판매 리스크를 줄이고, FC가 고객 상담에만
+              집중할 수 있는 환경을 제공하여 영업 경쟁력을 극대화합니다.
             </p>
           </div>
         </div>
       </section>
 
-      <section id="roadmap" class="scroll-mt-20">
+      <section id="roadmap" class="mb-24 scroll-mt-20">
         <h2 class="section-title">단계별 실행 계획</h2>
         <p class="section-subtitle">
           리스크를 최소화하고 성공적인 전환을 위해, 핵심 기능부터 점진적으로 구축하고 내재화하는 3단계 실행 계획을
@@ -570,6 +500,43 @@
           </div>
         </div>
       </section>
+
+      <section id="future-vision" class="scroll-mt-20">
+        <h2 class="section-title">최종 비전: AI 영업지원 Co-pilot</h2>
+        <p class="section-subtitle">
+          기반 시스템이 안정적으로 구축된 후, 우리는 단순한 정보 검색을 넘어 GA 비즈니스의 핵심적인 문제들을 해결하는
+          진정한 AI 파트너를 구현할 수 있습니다.
+        </p>
+        <div class="grid md:grid-cols-3 gap-8 text-left">
+          <div class="card p-6">
+            <h4 class="font-bold text-lg mb-2 text-sky-800">지능형 수수료 계산 에이전트</h4>
+            <p class="text-sm text-slate-600">
+              매월 업데이트되는 Excel, PDF 형태의 복잡한 시책/수수료 정책을 AI가 구조적으로 이해하고 저장합니다.
+              "A보험사 B상품 3건 계약 시 예상 수수료는?" 같은 질문에, AI 에이전트가 필요한 정보를 검색하고 Tool
+              Executor(계산 엔진)를 호출하여 실시간으로 정확한 계산 결과를 제공합니다. 더 이상 수작업 계산과 하드코딩은
+              필요 없습니다.
+            </p>
+          </div>
+          <div class="card p-6">
+            <h4 class="font-bold text-lg mb-2 text-sky-800">다차원 상품 비교 및 추천</h4>
+            <p class="text-sm text-slate-600">
+              "40대 남성, 가족력 있음, 비흡연자에게 가장 적합한 암보험 3개를 비교해줘" 같은 복잡한 요청에 대해, 시스템은
+              여러 보험사의 상품 약관(PDF), 소개서(이미지 내 표 포함)를 동시에 비교 분석합니다. 각 상품의 장단점, 보장
+              범위, 보험료를 표 형태로 정리하여 제공함으로써, FC의 전문적인 컨설팅을 지원하는 강력한 Co-pilot 역할을
+              수행합니다.
+            </p>
+          </div>
+          <div class="card p-6">
+            <h4 class="font-bold text-lg mb-2 text-sky-800">완벽한 감사 추적 및 출처 제시</h4>
+            <p class="text-sm text-slate-600">
+              금융업의 생명인 규정 준수를 위해, AI가 제공하는 모든 답변(수수료, 상품 정보 등)에는 법적 근거가 되는 원본
+              문서의 이름과 페이지 번호가 명확하게 함께 제시됩니다. "이 수수료율의 근거는 무엇인가?" 라는 질문에,
+              시스템은 "'A보험사 2025년 8월 시책.pdf' 3페이지"와 같이 정확한 출처를 제공하여 모든 활동의 투명성과
+              신뢰성을 보장합니다.
+            </p>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer class="bg-white mt-16 border-t">
@@ -597,21 +564,6 @@
             if (link.getAttribute('href') === `#${current}`) {
               link.classList.add('active');
             }
-          });
-        });
-
-        const tabs = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        tabs.forEach((tab) => {
-          tab.addEventListener('click', () => {
-            tabs.forEach((t) => t.classList.remove('active'));
-            tab.classList.add('active');
-
-            tabContents.forEach((content) => {
-              content.classList.add('hidden');
-            });
-            document.getElementById(tab.dataset.tab).classList.remove('hidden');
           });
         });
       });
