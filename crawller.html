@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Flash 기반 크롤링 아키텍처</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8fafc;
+            color: #334155;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+        .section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+        .section h2 {
+            color: #1e293b;
+            font-size: 1.6rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #4285f4;
+        }
+        .gemini-advantage {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 2px solid #2196f3;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .gemini-advantage h3 {
+            color: #0d47a1;
+            margin: 0 0 1rem 0;
+        }
+        .diagram-container {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #e2e8f0;
+        }
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+        }
+        .cost-breakdown {
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .cost-breakdown h4 {
+            color: #0369a1;
+            margin: 0 0 1rem 0;
+        }
+        .implementation-box {
+            background: #f0fdf4;
+            border: 2px solid #16a34a;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .implementation-box h4 {
+            color: #15803d;
+            margin: 0 0 1rem 0;
+        }
+        .code-sample {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .metric-card {
+            background: #f8fafc;
+            border: 2px solid #4285f4;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .metric-card h4 {
+            color: #1e293b;
+            margin: 0 0 0.5rem 0;
+        }
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4285f4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Gemini Flash 기반 크롤링 아키텍처</h1>
+            <p>고성능, 저비용 LLM 가이드 크롤링 시스템</p>
+        </div>
+
+        <div class="gemini-advantage">
+            <h3>Gemini Flash의 크롤링 시스템 최적화 장점</h3>
+            <ul>
+                <li><strong>뛰어난 가성비:</strong> GPT-4o-mini 대비 50% 저렴한 비용으로 유사한 성능</li>
+                <li><strong>빠른 응답속도:</strong> 평균 응답 시간 1-2초로 크롤링 속도 최적화</li>
+                <li><strong>긴 컨텍스트:</strong> 1M 토큰 지원으로 긴 HTML 페이지 처리 가능</li>
+                <li><strong>멀티모달:</strong> 이미지가 포함된 웹페이지도 분석 가능</li>
+                <li><strong>안정성:</strong> Google Cloud 인프라 기반 99.9% 가용성</li>
+            </ul>
+        </div>
+
+        <section class="section">
+            <h2>Gemini Flash 통합 시스템 아키텍처</h2>
+            <div class="diagram-container">
+                <svg width="1100" height="500" viewBox="0 0 1100 500" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#4285f4"/>
+                        </marker>
+                    </defs>
+
+                    <!-- Site Configuration -->
+                    <rect x="50" y="50" width="150" height="100" rx="10" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                    <text x="125" y="80" text-anchor="middle" font-weight="bold" font-size="14">사이트 설정</text>
+                    <text x="125" y="100" text-anchor="middle" font-size="11">40개 금융사이트</text>
+                    <text x="125" y="120" text-anchor="middle" font-size="11">+ 타겟 주제</text>
+
+                    <!-- Python Crawler with Gemini -->
+                    <rect x="250" y="50" width="300" height="150" rx="15" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
+                    <text x="400" y="80" text-anchor="middle" font-weight="bold" font-size="16">Python 크롤러 + Gemini Flash</text>
+
+                    <rect x="270" y="100" width="120" height="80" rx="8" fill="#f3e5f5" stroke="#9c27b0"/>
+                    <text x="330" y="125" text-anchor="middle" font-weight="bold" font-size="11">경로 결정</text>
+                    <text x="330" y="140" text-anchor="middle" font-size="9">링크 관련성 분석</text>
+                    <text x="330" y="155" text-anchor="middle" font-size="9">다음 URL 선택</text>
+                    <text x="330" y="170" text-anchor="middle" font-size="9">~500 tokens</text>
+
+                    <rect x="410" y="100" width="120" height="80" rx="8" fill="#fff3e0" stroke="#ff9800"/>
+                    <text x="470" y="125" text-anchor="middle" font-weight="bold" font-size="11">목적지 판단</text>
+                    <text x="470" y="140" text-anchor="middle" font-size="9">페이지 내용 분석</text>
+                    <text x="470" y="155" text-anchor="middle" font-size="9">수집 여부 결정</text>
+                    <text x="470" y="170" text-anchor="middle" font-size="9">~1K tokens</text>
+
+                    <!-- File Processor -->
+                    <rect x="600" y="50" width="200" height="150" rx="10" fill="#fff8e1" stroke="#ffc107" stroke-width="2"/>
+                    <text x="700" y="80" text-anchor="middle" font-weight="bold" font-size="14">다중 파일 처리기</text>
+                    <text x="700" y="105" text-anchor="middle" font-size="11">HTML/PDF/Word/Excel</text>
+                    <text x="700" y="125" text-anchor="middle" font-size="11">노이즈 제거</text>
+                    <text x="700" y="145" text-anchor="middle" font-size="11">초기 정제</text>
+                    <text x="700" y="165" text-anchor="middle" font-size="11">메타데이터 추출</text>
+
+                    <!-- Message Queue -->
+                    <rect x="250" y="250" width="300" height="80" rx="10" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+                    <text x="400" y="280" text-anchor="middle" font-weight="bold" font-size="16">메시지 큐 (RabbitMQ)</text>
+                    <text x="400" y="305" text-anchor="middle" font-size="12">정제된 데이터 + 메타정보</text>
+
+                    <!-- .NET Backend -->
+                    <rect x="600" y="250" width="400" height="200" rx="15" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+                    <text x="800" y="280" text-anchor="middle" font-weight="bold" font-size="16">.NET 백엔드 + Gemini Flash</text>
+
+                    <rect x="620" y="300" width="170" height="130" rx="8" fill="#e9d5ff" stroke="#8b5cf6"/>
+                    <text x="705" y="325" text-anchor="middle" font-weight="bold" font-size="11">구조화 엔진</text>
+                    <text x="705" y="345" text-anchor="middle" font-size="9">Gemini Flash API</text>
+                    <text x="705" y="360" text-anchor="middle" font-size="9">복잡한 데이터 추출</text>
+                    <text x="705" y="375" text-anchor="middle" font-size="9">JSON 구조화</text>
+                    <text x="705" y="390" text-anchor="middle" font-size="9">품질 검증</text>
+                    <text x="705" y="405" text-anchor="middle" font-size="9">~3K tokens</text>
+
+                    <rect x="810" y="300" width="170" height="130" rx="8" fill="#e9d5ff" stroke="#8b5cf6"/>
+                    <text x="895" y="325" text-anchor="middle" font-weight="bold" font-size="11">임베딩 & 저장</text>
+                    <text x="895" y="345" text-anchor="middle" font-size="9">벡터 생성</text>
+                    <text x="895" y="360" text-anchor="middle" font-size="9">Vector DB 저장</text>
+                    <text x="895" y="375" text-anchor="middle" font-size="9">Meta DB 저장</text>
+                    <text x="895" y="390" text-anchor="middle" font-size="9">인덱싱</text>
+
+                    <!-- Arrows -->
+                    <path d="M 200 100 H 250" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)"/>
+                    <path d="M 550 125 H 600" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)"/>
+                    <path d="M 400 200 V 250" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)"/>
+                    <path d="M 700 200 C 700 225, 550 225, 550 250" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)"/>
+                    <path d="M 550 290 H 600" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)"/>
+
+                    <!-- Labels -->
+                    <text x="225" y="90" font-size="10" fill="#4285f4">설정 로드</text>
+                    <text x="575" y="115" font-size="10" fill="#4285f4">파일 처리</text>
+                    <text x="420" y="235" font-size="10" fill="#4285f4">크롤링 데이터</text>
+                    <text x="575" y="280" font-size="10" fill="#4285f4">백엔드 처리</text>
+                </svg>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Gemini Flash 활용 최적화 전략</h2>
+
+            <h3>단계별 토큰 사용량 최적화</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>처리 단계</th>
+                        <th>평균 토큰 사용량</th>
+                        <th>최적화 방법</th>
+                        <th>예상 정확도</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>링크 관련성 판단</strong></td>
+                        <td>300-500 tokens</td>
+                        <td>링크 텍스트 + URL만 전송</td>
+                        <td>85-90%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>경로 선택</strong></td>
+                        <td>500-800 tokens</td>
+                        <td>상위 5개 링크만 분석</td>
+                        <td>90-95%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>목적지 도달 판단</strong></td>
+                        <td>800-1500 tokens</td>
+                        <td>핵심 텍스트 요약 후 전송</td>
+                        <td>90-95%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>컨텐츠 구조화</strong></td>
+                        <td>2000-4000 tokens</td>
+                        <td>청킹 + 배치 처리</td>
+                        <td>95%+</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <div class="cost-breakdown">
+            <h4>Gemini Flash 월별 비용 분석 (40개 사이트)</h4>
+            <p><strong>토큰 단가:</strong> $0.000075/1K input tokens, $0.0003/1K output tokens</p>
+            <p><strong>예상 월 사용량:</strong></p>
+            <ul>
+                <li>크롤링 경로 결정: 200만 토큰 × $0.000075 = $150</li>
+                <li>컨텐츠 구조화: 100만 토큰 × $0.0003 = $300</li>
+                <li>기타 처리: $50</li>
+            </ul>
+            <p><strong>총 예상 비용: $200-250/월</strong></p>
+            <p>(GPT-4o-mini 대비 40-50% 절약)</p>
+        </div>
+
+        <section class="section">
+            <h2>핵심 구현 컴포넌트</h2>
+
+            <h3>Python 크롤러 - Gemini Flash 통합</h3>
+            <div class="code-sample">
+import google.generativeai as genai
+from typing import Dict, List, Optional
+
+class GeminiGuidedCrawler:
+    def __init__(self, api_key: str):
+        genai.configure(api_key=api_key)
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
+
+    async def decide_next_path(self,
+                              current_url: str,
+                              available_links: List[Dict],
+                              target_topic: str) -> Optional[str]:
+        """Gemini Flash를 사용한 다음 경로 결정"""
+
+        # 토큰 최적화: 상위 5개 링크만 분석
+        top_links = available_links[:5]
+
+        prompt = f"""
+다음 링크들 중에서 "{target_topic}" 주제와 가장 관련성이 높은 링크를 하나 선택하세요.
+
+현재 URL: {current_url}
+목표 주제: {target_topic}
+
+사용 가능한 링크:
+{chr(10).join([f"- {link['text']}: {link['url']}" for link in top_links])}
+
+응답 형식:
+{{
+  "selected_url": "선택된 URL",
+  "confidence": 0.85,
+  "reasoning": "선택 이유"
+}}
+
+관련성이 낮으면 "none"을 반환하세요.
+"""
+
+        try:
+            response = await self.model.generate_content_async(prompt)
+            result = json.loads(response.text)
+
+            if result.get('confidence', 0) > 0.7:
+                return result['selected_url']
+            return None
+
+        except Exception as e:
+            print(f"Gemini API 에러: {e}")
+            return None</div>
+
+            <h3>.NET 백엔드 - 구조화 처리</h3>
+            <div class="code-sample">
+public class GeminiExtractionService
+{
+    private readonly HttpClient _httpClient;
+    private readonly string _apiKey;
+
+    public async Task<ExtractedData> ExtractStructuredDataAsync(
+        string content, string siteName, string category)
+    {
+        // 토큰 최적화: 4000자로 제한
+        var truncatedContent = content.Length > 4000
+            ? content.Substring(0, 4000) + "..."
+            : content;
+
+        var prompt = $@"
+다음 {siteName} ({category}) 웹페이지에서 금융 정보를 구조화하여 추출하세요:
+
+{truncatedContent}
+
+JSON 형태로 반환:
+{{
+  ""title"": ""페이지 제목"",
+  ""summary"": ""핵심 요약 (200자 이내)"",
+  ""financial_data"": {{
+    ""interest_rates"": ""금리 정보"",
+    ""policies"": ""정책 정보"",
+    ""statistics"": ""통계 데이터""
+  }},
+  ""key_points"": [""중요 포인트들""],
+  ""relevance_score"": 0.9,
+  ""extracted_date"": ""{DateTime.Now:yyyy-MM-dd}""
+}}
+";
+
+        var requestBody = new
+        {
+            contents = new[] {
+                new { parts = new[] { new { text = prompt } } }
+            }
+        };
+
+        var response = await _httpClient.PostAsync(
+            $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={_apiKey}",
+            new StringContent(JsonSerializer.Serialize(requestBody),
+                            Encoding.UTF8, "application/json"));
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(responseContent);
+
+        return JsonSerializer.Deserialize<ExtractedData>(
+            geminiResponse.Candidates[0].Content.Parts[0].Text);
+    }
+}</div>
+        </section>
+
+        <section class="section">
+            <h2>성능 및 효율성 메트릭</h2>
+            <div class="performance-metrics">
+                <div class="metric-card">
+                    <h4>응답 속도</h4>
+                    <div class="metric-value">1-2초</div>
+                    <p>크롤링 속도 최적화</p>
+                </div>
+                <div class="metric-card">
+                    <h4>비용 효율성</h4>
+                    <div class="metric-value">40-50%</div>
+                    <p>GPT-4o-mini 대비 절약</p>
+                </div>
+                <div class="metric-card">
+                    <h4>컨텍스트 길이</h4>
+                    <div class="metric-value">1M 토큰</div>
+                    <p>긴 문서 처리 가능</p>
+                </div>
+                <div class="metric-card">
+                    <h4>예상 정확도</h4>
+                    <div class="metric-value">90-95%</div>
+                    <p>높은 품질 보장</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="implementation-box">
+            <h4>Gemini Flash 도입 시 주요 고려사항</h4>
+            <ul>
+                <li><strong>API 키 관리:</strong> Google Cloud Console에서 Gemini API 활성화 및 키 발급</li>
+                <li><strong>속도 제한:</strong> 분당 1000회 호출 제한 (필요시 quota 증대 요청)</li>
+                <li><strong>에러 핸들링:</strong> API 장애 시 재시도 로직 및 fallback 메커니즘</li>
+                <li><strong>토큰 최적화:</strong> 불필요한 텍스트 제거로 비용 절감</li>
+                <li><strong>배치 처리:</strong> 여러 요청을 묶어서 효율성 향상</li>
+            </ul>
+        </div>
+
+        <section class="section">
+            <h2>구현 타임라인</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>주차</th>
+                        <th>구현 내용</th>
+                        <th>Gemini Flash 활용</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Week 1-2</strong></td>
+                        <td>Gemini API 연동 및 기본 크롤러</td>
+                        <td>경로 결정 로직 구현</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Week 3-4</strong></td>
+                        <td>다중 파일 처리 및 목적지 판단</td>
+                        <td>컨텐츠 분석 최적화</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Week 5-6</strong></td>
+                        <td>.NET 백엔드 구조화 엔진</td>
+                        <td>복잡한 데이터 추출 구현</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Week 7-8</strong></td>
+                        <td>40개 사이트 통합 테스트</td>
+                        <td>성능 최적화 및 비용 조절</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+</body>
+</html>
