@@ -1,472 +1,649 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gemini Flash 기반 크롤링 아키텍처</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f8fafc;
-            color: #334155;
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f8fafc;
+        color: #334155;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .header {
+        background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 2.2rem;
+        font-weight: 700;
+      }
+      .section {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e2e8f0;
+      }
+      .section h2 {
+        color: #1e293b;
+        font-size: 1.6rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 3px solid #4285f4;
+      }
+      .gemini-advantage {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border: 2px solid #2196f3;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+      }
+      .gemini-advantage h3 {
+        color: #0d47a1;
+        margin: 0 0 1rem 0;
+      }
+      .diagram-container {
+        background: #f1f5f9;
+        border-radius: 12px;
+        padding: 2rem;
+        margin: 1.5rem 0;
+        overflow-x: auto;
+      }
+      .cost-breakdown {
+        background: #f0f9ff;
+        border: 2px solid #0ea5e9;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+      }
+      .cost-breakdown h4 {
+        color: #0369a1;
+        margin: 0 0 1rem 0;
+      }
+
+      /* Demo Specific Styles */
+      #demo-container {
+        font-family: 'Inter', sans-serif, -apple-system;
+        background-color: #f3f4f6;
+      }
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .status-pending {
+        background-color: #e5e7eb;
+        color: #4b5563;
+      }
+      .status-crawling {
+        background-color: #dbeafe;
+        color: #1d4ed8;
+      }
+      .status-processing {
+        background-color: #fef3c7;
+        color: #b45309;
+      }
+      .status-completed {
+        background-color: #dcfce7;
+        color: #166534;
+      }
+      .status-failed {
+        background-color: #fee2e2;
+        color: #991b1b;
+      }
+
+      #demo-container ::-webkit-scrollbar {
+        width: 8px;
+      }
+      #demo-container ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+      #demo-container ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+      }
+      #demo-container ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
-        .header {
-            background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 16px;
-            text-align: center;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 2.2rem;
-            font-weight: 700;
-        }
-        .section {
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            border: 1px solid #e2e8f0;
-        }
-        .section h2 {
-            color: #1e293b;
-            font-size: 1.6rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 3px solid #4285f4;
-        }
-        .gemini-advantage {
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            border: 2px solid #2196f3;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-        }
-        .gemini-advantage h3 {
-            color: #0d47a1;
-            margin: 0 0 1rem 0;
-        }
-        .diagram-container {
-            background: #f1f5f9;
-            border-radius: 12px;
-            padding: 2rem;
-            margin: 1.5rem 0;
-            overflow-x: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border: 1px solid #e2e8f0;
-        }
-        th {
-            background: #f8fafc;
-            font-weight: 600;
-            color: #475569;
-        }
-        .cost-breakdown {
-            background: #f0f9ff;
-            border: 2px solid #0ea5e9;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-        }
-        .cost-breakdown h4 {
-            color: #0369a1;
-            margin: 0 0 1rem 0;
-        }
-        .implementation-box {
-            background: #f0fdf4;
-            border: 2px solid #16a34a;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-        }
-        .implementation-box h4 {
-            color: #15803d;
-            margin: 0 0 1rem 0;
-        }
-        .code-sample {
-            background: #1e293b;
-            color: #e2e8f0;
-            padding: 1rem;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            overflow-x: auto;
-            margin: 1rem 0;
-        }
-        .performance-metrics {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin: 1rem 0;
-        }
-        .metric-card {
-            background: #f8fafc;
-            border: 2px solid #4285f4;
-            border-radius: 10px;
-            padding: 1rem;
-            text-align: center;
-        }
-        .metric-card h4 {
-            color: #1e293b;
-            margin: 0 0 0.5rem 0;
-        }
-        .metric-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #4285f4;
-        }
+      }
+      .fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <h1>Gemini Flash 기반 크롤링 아키텍처</h1>
-            <p>고성능, 저비용 LLM 가이드 크롤링 시스템</p>
-        </div>
+      <div class="header">
+        <h1>Gemini Flash 기반 크롤링 아키텍처</h1>
+        <p>고성능, 저비용 LLM 가이드 크롤링 시스템</p>
+      </div>
 
+      <section class="section" id="big-picture">
+        <h2>프로젝트의 큰 그림</h2>
+        <p><strong>목표:</strong> AI 학습을 위한 구조화된 지식 자산을 얻기 위한 데이터 수집 플랫폼을 구축합니다.</p>
+        <div class="diagram-container">
+          <svg width="800" height="150" viewBox="0 0 800 150" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker
+                id="arrow-big-picture"
+                viewBox="0 0 10 10"
+                refX="5"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#555" />
+              </marker>
+            </defs>
+            <!-- Nodes -->
+            <g>
+              <rect x="10" y="30" width="150" height="90" rx="8" fill="#e3f2fd" stroke="#333" stroke-width="1" />
+              <text x="85" y="65" text-anchor="middle" font-size="20px" fill="#333">🌐</text>
+              <text x="85" y="90" text-anchor="middle" font-size="14px" font-weight="bold" fill="#333">인터넷</text>
+              <text x="85" y="110" text-anchor="middle" font-size="12px" fill="#555">(비정형 데이터)</text>
+            </g>
+            <g>
+              <rect x="220" y="30" width="150" height="90" rx="8" fill="#e8f5e9" stroke="#333" stroke-width="1" />
+              <text x="295" y="65" text-anchor="middle" font-size="20px" fill="#333">🧠</text>
+              <text x="295" y="90" text-anchor="middle" font-size="14px" font-weight="bold" fill="#333">
+                지능형 데이터 파이프라인
+              </text>
+              <text x="295" y="110" text-anchor="middle" font-size="12px" fill="#555">
+                (LLM 가이드 수집, 정제, 벡터화)
+              </text>
+            </g>
+            <g>
+              <rect x="430" y="30" width="150" height="90" rx="8" fill="#fffde7" stroke="#333" stroke-width="1" />
+              <text x="505" y="65" text-anchor="middle" font-size="20px" fill="#333">📚</text>
+              <text x="505" y="90" text-anchor="middle" font-size="14px" font-weight="bold" fill="#333">
+                구조화된 지식
+              </text>
+              <text x="505" y="110" text-anchor="middle" font-size="12px" fill="#555">(Vector DB, Meta DB)</text>
+            </g>
+
+            <g>
+              <rect x="640" y="30" width="150" height="90" rx="8" fill="#f3e5f5" stroke="#333" stroke-width="1" />
+              <text x="715" y="65" text-anchor="middle" font-size="20px" fill="#333">💡</text>
+              <text x="715" y="90" text-anchor="middle" font-size="14px" font-weight="bold" fill="#333">
+                최종 서비스
+              </text>
+              <text x="715" y="110" text-anchor="middle" font-size="12px" fill="#555">(검색, 분석, Q&A)</text>
+            </g>
+            <!-- Arrows -->
+            <line
+              x1="165"
+              y1="75"
+              x2="215"
+              y2="75"
+              stroke="#555"
+              stroke-width="2"
+              marker-end="url(#arrow-big-picture)"
+            />
+            <line
+              x1="375"
+              y1="75"
+              x2="425"
+              y2="75"
+              stroke="#555"
+              stroke-width="2"
+              marker-end="url(#arrow-big-picture)"
+            />
+            <line
+              x1="585"
+              y1="75"
+              x2="635"
+              y2="75"
+              stroke="#555"
+              stroke-width="2"
+              marker-end="url(#arrow-big-picture)"
+            />
+          </svg>
+        </div>
+      </section>
+      <section class="section">
+        <h2>Gemini Flash 통합 시스템 아키텍처</h2>
+        <div class="diagram-container">
+          <svg width="1100" height="500" viewBox="0 0 1100 500" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="8"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#4285f4" />
+              </marker>
+            </defs>
+            <rect
+              x="20"
+              y="20"
+              width="810"
+              height="210"
+              rx="20"
+              fill="#e3f2fd"
+              stroke="#2196f3"
+              stroke-width="2"
+              stroke-dasharray="8 4"
+            />
+            <text x="425" y="45" text-anchor="middle" font-weight="bold" font-size="16" fill="#0d47a1">
+              내부 시스템 영역
+            </text>
+            <rect
+              x="580"
+              y="230"
+              width="440"
+              height="250"
+              rx="20"
+              fill="#f3e8ff"
+              stroke="#9333ea"
+              stroke-width="2"
+              stroke-dasharray="8 4"
+            />
+            <text x="800" y="470" text-anchor="middle" font-weight="bold" font-size="16" fill="#581c87">
+              외부 파트너 영역 (ex 벨루가)
+            </text>
+            <rect x="50" y="60" width="150" height="100" rx="10" fill="white" stroke="#2196f3" stroke-width="2" />
+            <text x="125" y="90" text-anchor="middle" font-weight="bold" font-size="14">사이트 설정</text>
+            <text x="125" y="110" text-anchor="middle" font-size="11">40개 금융사이트</text>
+            <text x="125" y="130" text-anchor="middle" font-size="11">+ 타겟 주제</text>
+            <rect x="250" y="60" width="300" height="150" rx="15" fill="white" stroke="#4caf50" stroke-width="2" />
+            <text x="400" y="90" text-anchor="middle" font-weight="bold" font-size="16">
+              Python 크롤러 + Gemini Flash
+            </text>
+            <rect x="270" y="110" width="120" height="80" rx="8" fill="#f3e5f5" stroke="#9c27b0" />
+            <text x="330" y="135" text-anchor="middle" font-weight="bold" font-size="11">경로 결정</text>
+            <text x="330" y="150" text-anchor="middle" font-size="9">링크 관련성 분석</text>
+            <text x="330" y="165" text-anchor="middle" font-size="9">다음 URL 선택</text>
+            <text x="330" y="180" text-anchor="middle" font-size="9">~500 tokens</text>
+            <rect x="410" y="110" width="120" height="80" rx="8" fill="#fff3e0" stroke="#ff9800" />
+            <text x="470" y="135" text-anchor="middle" font-weight="bold" font-size="11">목적지 판단</text>
+            <text x="470" y="150" text-anchor="middle" font-size="9">페이지 내용 분석</text>
+            <text x="470" y="165" text-anchor="middle" font-size="9">수집 여부 결정</text>
+            <text x="470" y="180" text-anchor="middle" font-size="9">~1K tokens</text>
+            <rect x="600" y="60" width="200" height="150" rx="10" fill="white" stroke="#ffc107" stroke-width="2" />
+            <text x="700" y="90" text-anchor="middle" font-weight="bold" font-size="14">다중 파일 처리기</text>
+            <text x="700" y="115" text-anchor="middle" font-size="11">HTML/PDF/Word/Excel</text>
+            <text x="700" y="135" text-anchor="middle" font-size="11">노이즈 제거</text>
+            <text x="700" y="155" text-anchor="middle" font-size="11">초기 정제</text>
+            <text x="700" y="175" text-anchor="middle" font-size="11">메타데이터 추출</text>
+            <rect x="250" y="280" width="300" height="80" rx="10" fill="#fce4ec" stroke="#e91e63" stroke-width="2" />
+            <text x="400" y="310" text-anchor="middle" font-weight="bold" font-size="16">데이터 전달 (RabbitMQ)</text>
+            <text x="400" y="335" text-anchor="middle" font-size="12">정제된 데이터 + 메타정보</text>
+            <rect x="600" y="250" width="400" height="200" rx="15" fill="white" stroke="#9333ea" stroke-width="2" />
+            <text x="800" y="280" text-anchor="middle" font-weight="bold" font-size="16">
+              .NET 백엔드 + Gemini Flash
+            </text>
+            <rect x="620" y="300" width="170" height="130" rx="8" fill="#e9d5ff" stroke="#8b5cf6" />
+            <text x="705" y="325" text-anchor="middle" font-weight="bold" font-size="11">구조화 엔진</text>
+            <text x="705" y="345" text-anchor="middle" font-size="9">Gemini Flash API</text>
+            <text x="705" y="360" text-anchor="middle" font-size="9">복잡한 데이터 추출</text>
+            <text x="705" y="375" text-anchor="middle" font-size="9">JSON 구조화</text>
+            <text x="705" y="390" text-anchor="middle" font-size="9">품질 검증</text>
+            <text x="705" y="405" text-anchor="middle" font-size="9">~3K tokens</text>
+            <rect x="810" y="300" width="170" height="130" rx="8" fill="#e9d5ff" stroke="#8b5cf6" />
+            <text x="895" y="325" text-anchor="middle" font-weight="bold" font-size="11">임베딩 & 저장</text>
+            <text x="895" y="345" text-anchor="middle" font-size="9">벡터 생성</text>
+            <text x="895" y="360" text-anchor="middle" font-size="9">Vector DB 저장</text>
+            <text x="895" y="375" text-anchor="middle" font-size="9">Meta DB 저장</text>
+            <text x="895" y="390" text-anchor="middle" font-size="9">인덱싱</text>
+            <path d="M 200 110 H 250" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)" />
+            <path d="M 550 135 H 600" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)" />
+            <path d="M 400 210 V 280" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)" />
+            <path
+              d="M 700 210 C 700 245, 550 245, 550 280"
+              stroke="#4285f4"
+              stroke-width="2"
+              marker-end="url(#arrow)"
+            />
+            <path d="M 550 320 H 600" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="225" y="100" font-size="10" fill="#4285f4">설정 로드</text>
+            <text x="575" y="125" font-size="10" fill="#4285f4">파일 처리</text>
+            <text x="420" y="255" font-size="10" fill="#4285f4">크롤링 데이터</text>
+            <text x="575" y="310" font-size="10" fill="#4285f4">백엔드 처리</text>
+          </svg>
+        </div>
         <div class="gemini-advantage">
-            <h3>Gemini Flash의 크롤링 시스템 최적화 장점</h3>
-            <ul>
-                <li><strong>뛰어난 가성비:</strong> GPT-4o-mini 대비 50% 저렴한 비용으로 유사한 성능</li>
-                <li><strong>빠른 응답속도:</strong> 평균 응답 시간 1-2초로 크롤링 속도 최적화</li>
-                <li><strong>긴 컨텍스트:</strong> 1M 토큰 지원으로 긴 HTML 페이지 처리 가능</li>
-                <li><strong>멀티모달:</strong> 이미지가 포함된 웹페이지도 분석 가능</li>
-                <li><strong>안정성:</strong> Google Cloud 인프라 기반 99.9% 가용성</li>
-            </ul>
+          <h3>Gemini Flash의 크롤링 시스템 최적화 장점</h3>
+          <ul>
+            <li><strong>뛰어난 가성비:</strong> GPT-4o-mini 대비 50% 저렴한 비용으로 유사한 성능</li>
+            <li><strong>빠른 응답속도:</strong> 평균 응답 시간 1-2초로 크롤링 속도 최적화</li>
+            <li><strong>긴 컨텍스트:</strong> 1M 토큰 지원으로 긴 HTML 페이지 처리 가능</li>
+            <li><strong>멀티모달:</strong> 이미지가 포함된 웹페이지도 분석 가능</li>
+            <li><strong>안정성:</strong> Google Cloud 인프라 기반 99.9% 가용성</li>
+          </ul>
         </div>
+      </section>
 
-        <section class="section">
-            <h2>Gemini Flash 통합 시스템 아키텍처</h2>
-            <div class="diagram-container">
-                <svg width="1100" height="500" viewBox="0 0 1100 500" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#4285f4"/>
-                        </marker>
-                    </defs>
-
-                    <!-- Site Configuration -->
-                    <rect x="50" y="50" width="150" height="100" rx="10" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
-                    <text x="125" y="80" text-anchor="middle" font-weight="bold" font-size="14">사이트 설정</text>
-                    <text x="125" y="100" text-anchor="middle" font-size="11">40개 금융사이트</text>
-                    <text x="125" y="120" text-anchor="middle" font-size="11">+ 타겟 주제</text>
-
-                    <!-- Python Crawler with Gemini -->
-                    <rect x="250" y="50" width="300" height="150" rx="15" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
-                    <text x="400" y="80" text-anchor="middle" font-weight="bold" font-size="16">Python 크롤러 + Gemini Flash</text>
-
-                    <rect x="270" y="100" width="120" height="80" rx="8" fill="#f3e5f5" stroke="#9c27b0"/>
-                    <text x="330" y="125" text-anchor="middle" font-weight="bold" font-size="11">경로 결정</text>
-                    <text x="330" y="140" text-anchor="middle" font-size="9">링크 관련성 분석</text>
-                    <text x="330" y="155" text-anchor="middle" font-size="9">다음 URL 선택</text>
-                    <text x="330" y="170" text-anchor="middle" font-size="9">~500 tokens</text>
-
-                    <rect x="410" y="100" width="120" height="80" rx="8" fill="#fff3e0" stroke="#ff9800"/>
-                    <text x="470" y="125" text-anchor="middle" font-weight="bold" font-size="11">목적지 판단</text>
-                    <text x="470" y="140" text-anchor="middle" font-size="9">페이지 내용 분석</text>
-                    <text x="470" y="155" text-anchor="middle" font-size="9">수집 여부 결정</text>
-                    <text x="470" y="170" text-anchor="middle" font-size="9">~1K tokens</text>
-
-                    <!-- File Processor -->
-                    <rect x="600" y="50" width="200" height="150" rx="10" fill="#fff8e1" stroke="#ffc107" stroke-width="2"/>
-                    <text x="700" y="80" text-anchor="middle" font-weight="bold" font-size="14">다중 파일 처리기</text>
-                    <text x="700" y="105" text-anchor="middle" font-size="11">HTML/PDF/Word/Excel</text>
-                    <text x="700" y="125" text-anchor="middle" font-size="11">노이즈 제거</text>
-                    <text x="700" y="145" text-anchor="middle" font-size="11">초기 정제</text>
-                    <text x="700" y="165" text-anchor="middle" font-size="11">메타데이터 추출</text>
-
-                    <!-- Message Queue -->
-                    <rect x="250" y="250" width="300" height="80" rx="10" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
-                    <text x="400" y="280" text-anchor="middle" font-weight="bold" font-size="16">메시지 큐 (RabbitMQ)</text>
-                    <text x="400" y="305" text-anchor="middle" font-size="12">정제된 데이터 + 메타정보</text>
-
-                    <!-- .NET Backend -->
-                    <rect x="600" y="250" width="400" height="200" rx="15" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
-                    <text x="800" y="280" text-anchor="middle" font-weight="bold" font-size="16">.NET 백엔드 + Gemini Flash</text>
-
-                    <rect x="620" y="300" width="170" height="130" rx="8" fill="#e9d5ff" stroke="#8b5cf6"/>
-                    <text x="705" y="325" text-anchor="middle" font-weight="bold" font-size="11">구조화 엔진</text>
-                    <text x="705" y="345" text-anchor="middle" font-size="9">Gemini Flash API</text>
-                    <text x="705" y="360" text-anchor="middle" font-size="9">복잡한 데이터 추출</text>
-                    <text x="705" y="375" text-anchor="middle" font-size="9">JSON 구조화</text>
-                    <text x="705" y="390" text-anchor="middle" font-size="9">품질 검증</text>
-                    <text x="705" y="405" text-anchor="middle" font-size="9">~3K tokens</text>
-
-                    <rect x="810" y="300" width="170" height="130" rx="8" fill="#e9d5ff" stroke="#8b5cf6"/>
-                    <text x="895" y="325" text-anchor="middle" font-weight="bold" font-size="11">임베딩 & 저장</text>
-                    <text x="895" y="345" text-anchor="middle" font-size="9">벡터 생성</text>
-                    <text x="895" y="360" text-anchor="middle" font-size="9">Vector DB 저장</text>
-                    <text x="895" y="375" text-anchor="middle" font-size="9">Meta DB 저장</text>
-                    <text x="895" y="390" text-anchor="middle" font-size="9">인덱싱</text>
-
-                    <!-- Arrows -->
-                    <path d="M 200 100 H 250" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)"/>
-                    <path d="M 550 125 H 600" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)"/>
-                    <path d="M 400 200 V 250" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)"/>
-                    <path d="M 700 200 C 700 225, 550 225, 550 250" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)"/>
-                    <path d="M 550 290 H 600" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)"/>
-
-                    <!-- Labels -->
-                    <text x="225" y="90" font-size="10" fill="#4285f4">설정 로드</text>
-                    <text x="575" y="115" font-size="10" fill="#4285f4">파일 처리</text>
-                    <text x="420" y="235" font-size="10" fill="#4285f4">크롤링 데이터</text>
-                    <text x="575" y="280" font-size="10" fill="#4285f4">백엔드 처리</text>
-                </svg>
-            </div>
-        </section>
-
-        <section class="section">
-            <h2>Gemini Flash 활용 최적화 전략</h2>
-
-            <h3>단계별 토큰 사용량 최적화</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>처리 단계</th>
-                        <th>평균 토큰 사용량</th>
-                        <th>최적화 방법</th>
-                        <th>예상 정확도</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>링크 관련성 판단</strong></td>
-                        <td>300-500 tokens</td>
-                        <td>링크 텍스트 + URL만 전송</td>
-                        <td>85-90%</td>
-                    </tr>
-                    <tr>
-                        <td><strong>경로 선택</strong></td>
-                        <td>500-800 tokens</td>
-                        <td>상위 5개 링크만 분석</td>
-                        <td>90-95%</td>
-                    </tr>
-                    <tr>
-                        <td><strong>목적지 도달 판단</strong></td>
-                        <td>800-1500 tokens</td>
-                        <td>핵심 텍스트 요약 후 전송</td>
-                        <td>90-95%</td>
-                    </tr>
-                    <tr>
-                        <td><strong>컨텐츠 구조화</strong></td>
-                        <td>2000-4000 tokens</td>
-                        <td>청킹 + 배치 처리</td>
-                        <td>95%+</td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
-
+      <section id="live-demo" class="section">
+        <h2>Live Demo (샘플)</h2>
+        <p class="mb-6">
+          아래 데모는 전체 시스템의 작동 방식을 시뮬레이션합니다. '크롤링 시작' 버튼을 눌러 지정된 사이트 목록에서
+          데이터 수집을 시작하고, 각 사이트의 상태가 실시간으로 변경되는 과정을 확인하세요.
+        </p>
+        <div id="demo-container" class="bg-gray-50 p-4 sm:p-6 lg:p-8 rounded-xl shadow-inner border border-gray-200">
+          <!-- Demo will be injected here -->
+        </div>
         <div class="cost-breakdown">
-            <h4>Gemini Flash 월별 비용 분석 (40개 사이트)</h4>
-            <p><strong>토큰 단가:</strong> $0.000075/1K input tokens, $0.0003/1K output tokens</p>
-            <p><strong>예상 월 사용량:</strong></p>
-            <ul>
-                <li>크롤링 경로 결정: 200만 토큰 × $0.000075 = $150</li>
-                <li>컨텐츠 구조화: 100만 토큰 × $0.0003 = $300</li>
-                <li>기타 처리: $50</li>
-            </ul>
-            <p><strong>총 예상 비용: $200-250/월</strong></p>
-            <p>(GPT-4o-mini 대비 40-50% 절약)</p>
+          <h4>Gemini Flash 월별 비용 분석 (40개 사이트)</h4>
+          <p><strong>토큰 단가:</strong> $0.000075/1K input tokens, $0.0003/1K output tokens</p>
+          <p><strong>예상 월 사용량:</strong></p>
+          <ul>
+            <li>크롤링 경로 결정: 200만 토큰 × $0.000075 = $150</li>
+            <li>컨텐츠 구조화: 100만 토큰 × $0.0003 = $300</li>
+            <li>기타 처리: $50</li>
+          </ul>
+          <p><strong>총 예상 비용: $200-250/월</strong></p>
+          <p>(GPT-4o-mini 대비 40-50% 절약)</p>
         </div>
-
-        <section class="section">
-            <h2>핵심 구현 컴포넌트</h2>
-
-            <h3>Python 크롤러 - Gemini Flash 통합</h3>
-            <div class="code-sample">
-import google.generativeai as genai
-from typing import Dict, List, Optional
-
-class GeminiGuidedCrawler:
-    def __init__(self, api_key: str):
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
-
-    async def decide_next_path(self,
-                              current_url: str,
-                              available_links: List[Dict],
-                              target_topic: str) -> Optional[str]:
-        """Gemini Flash를 사용한 다음 경로 결정"""
-
-        # 토큰 최적화: 상위 5개 링크만 분석
-        top_links = available_links[:5]
-
-        prompt = f"""
-다음 링크들 중에서 "{target_topic}" 주제와 가장 관련성이 높은 링크를 하나 선택하세요.
-
-현재 URL: {current_url}
-목표 주제: {target_topic}
-
-사용 가능한 링크:
-{chr(10).join([f"- {link['text']}: {link['url']}" for link in top_links])}
-
-응답 형식:
-{{
-  "selected_url": "선택된 URL",
-  "confidence": 0.85,
-  "reasoning": "선택 이유"
-}}
-
-관련성이 낮으면 "none"을 반환하세요.
-"""
-
-        try:
-            response = await self.model.generate_content_async(prompt)
-            result = json.loads(response.text)
-
-            if result.get('confidence', 0) > 0.7:
-                return result['selected_url']
-            return None
-
-        except Exception as e:
-            print(f"Gemini API 에러: {e}")
-            return None</div>
-
-            <h3>.NET 백엔드 - 구조화 처리</h3>
-            <div class="code-sample">
-public class GeminiExtractionService
-{
-    private readonly HttpClient _httpClient;
-    private readonly string _apiKey;
-
-    public async Task<ExtractedData> ExtractStructuredDataAsync(
-        string content, string siteName, string category)
-    {
-        // 토큰 최적화: 4000자로 제한
-        var truncatedContent = content.Length > 4000
-            ? content.Substring(0, 4000) + "..."
-            : content;
-
-        var prompt = $@"
-다음 {siteName} ({category}) 웹페이지에서 금융 정보를 구조화하여 추출하세요:
-
-{truncatedContent}
-
-JSON 형태로 반환:
-{{
-  ""title"": ""페이지 제목"",
-  ""summary"": ""핵심 요약 (200자 이내)"",
-  ""financial_data"": {{
-    ""interest_rates"": ""금리 정보"",
-    ""policies"": ""정책 정보"",
-    ""statistics"": ""통계 데이터""
-  }},
-  ""key_points"": [""중요 포인트들""],
-  ""relevance_score"": 0.9,
-  ""extracted_date"": ""{DateTime.Now:yyyy-MM-dd}""
-}}
-";
-
-        var requestBody = new
-        {
-            contents = new[] {
-                new { parts = new[] { new { text = prompt } } }
-            }
-        };
-
-        var response = await _httpClient.PostAsync(
-            $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={_apiKey}",
-            new StringContent(JsonSerializer.Serialize(requestBody),
-                            Encoding.UTF8, "application/json"));
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-        var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(responseContent);
-
-        return JsonSerializer.Deserialize<ExtractedData>(
-            geminiResponse.Candidates[0].Content.Parts[0].Text);
-    }
-}</div>
-        </section>
-
-        <section class="section">
-            <h2>성능 및 효율성 메트릭</h2>
-            <div class="performance-metrics">
-                <div class="metric-card">
-                    <h4>응답 속도</h4>
-                    <div class="metric-value">1-2초</div>
-                    <p>크롤링 속도 최적화</p>
-                </div>
-                <div class="metric-card">
-                    <h4>비용 효율성</h4>
-                    <div class="metric-value">40-50%</div>
-                    <p>GPT-4o-mini 대비 절약</p>
-                </div>
-                <div class="metric-card">
-                    <h4>컨텍스트 길이</h4>
-                    <div class="metric-value">1M 토큰</div>
-                    <p>긴 문서 처리 가능</p>
-                </div>
-                <div class="metric-card">
-                    <h4>예상 정확도</h4>
-                    <div class="metric-value">90-95%</div>
-                    <p>높은 품질 보장</p>
-                </div>
-            </div>
-        </section>
-
-        <div class="implementation-box">
-            <h4>Gemini Flash 도입 시 주요 고려사항</h4>
-            <ul>
-                <li><strong>API 키 관리:</strong> Google Cloud Console에서 Gemini API 활성화 및 키 발급</li>
-                <li><strong>속도 제한:</strong> 분당 1000회 호출 제한 (필요시 quota 증대 요청)</li>
-                <li><strong>에러 핸들링:</strong> API 장애 시 재시도 로직 및 fallback 메커니즘</li>
-                <li><strong>토큰 최적화:</strong> 불필요한 텍스트 제거로 비용 절감</li>
-                <li><strong>배치 처리:</strong> 여러 요청을 묶어서 효율성 향상</li>
-            </ul>
-        </div>
-
-        <section class="section">
-            <h2>구현 타임라인</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>주차</th>
-                        <th>구현 내용</th>
-                        <th>Gemini Flash 활용</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Week 1-2</strong></td>
-                        <td>Gemini API 연동 및 기본 크롤러</td>
-                        <td>경로 결정 로직 구현</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Week 3-4</strong></td>
-                        <td>다중 파일 처리 및 목적지 판단</td>
-                        <td>컨텐츠 분석 최적화</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Week 5-6</strong></td>
-                        <td>.NET 백엔드 구조화 엔진</td>
-                        <td>복잡한 데이터 추출 구현</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Week 7-8</strong></td>
-                        <td>40개 사이트 통합 테스트</td>
-                        <td>성능 최적화 및 비용 조절</td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
+      </section>
     </div>
-</body>
+
+    <script>
+      lucide.createIcons();
+
+      // --- DEMO INJECTION LOGIC ---
+      function injectDemo() {
+        const demoContainer = document.getElementById('demo-container');
+
+        demoContainer.innerHTML = `
+                <div class="flex flex-col md:flex-row min-h-screen w-full">
+                    <!-- 사이드바 -->
+                    <aside class="w-full md:w-64 bg-white border-r border-gray-200 p-6 flex-shrink-0 rounded-l-xl">
+                        <div class="flex items-center gap-3 mb-8">
+                            <div class="bg-indigo-600 text-white p-2 rounded-lg">
+                                <i data-lucide="globe-2"></i>
+                            </div>
+                            <h1 class="text-xl font-bold text-gray-800">크롤러 대시보드</h1>
+                        </div>
+                        <nav class="space-y-2">
+                            <a href="#" class="flex items-center gap-3 px-4 py-2 text-white bg-indigo-600 rounded-lg font-semibold">
+                                <i data-lucide="layout-dashboard"></i>
+                                <span>대시보드</span>
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                                <i data-lucide="settings"></i>
+                                <span>설정</span>
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                                <i data-lucide="history"></i>
+                                <span>작업 기록</span>
+                            </a>
+                        </nav>
+                        <div class="mt-auto pt-8">
+                             <div class="bg-gray-100 p-4 rounded-lg">
+                                <h3 class="font-semibold text-sm text-gray-700 mb-2">시스템 상태</h3>
+                                <div class="flex items-center gap-2 text-sm text-green-600">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                    <span>정상 작동 중</span>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- 메인 콘텐츠 -->
+                    <main class="flex-1 p-4 md:p-8 bg-white rounded-r-xl">
+                        <div class="max-w-7xl mx-auto">
+                            <header class="mb-8">
+                                <h2 class="text-3xl font-bold text-gray-900">금융 & 재테크 정보 수집</h2>
+                                <p class="text-gray-500 mt-1">지정된 웹사이트에서 최신 정보를 수집, 처리 및 분석합니다.</p>
+                            </header>
+
+                            <!-- 컨트롤 패널 -->
+                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-8 fade-in">
+                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-800">크롤링 작업 제어</h3>
+                                        <p class="text-sm text-gray-500 mt-1">아래 버튼을 눌러 전체 프로세스를 시작하세요.</p>
+                                    </div>
+                                    <button id="start-crawling-btn" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-indigo-700 transition-all shadow-sm disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                        <i data-lucide="play-circle"></i>
+                                        <span>크롤링 시작</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 요약 정보 -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                                <div class="bg-gray-50 p-6 rounded-2xl border fade-in" style="animation-delay: 0.1s;">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-gray-500 font-medium">총 대상 사이트</h4>
+                                        <i data-lucide="target" class="text-gray-400"></i>
+                                    </div>
+                                    <p id="total-sites" class="text-3xl font-bold mt-2">0</p>
+                                </div>
+                                <div class="bg-gray-50 p-6 rounded-2xl border fade-in" style="animation-delay: 0.2s;">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-gray-500 font-medium">완료</h4>
+                                        <i data-lucide="check-circle" class="text-green-500"></i>
+                                    </div>
+                                    <p id="completed-sites" class="text-3xl font-bold mt-2">0</p>
+                                </div>
+                                <div class="bg-gray-50 p-6 rounded-2xl border fade-in" style="animation-delay: 0.3s;">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-gray-500 font-medium">진행 중</h4>
+                                        <i data-lucide="loader" class="text-blue-500 animate-spin"></i>
+                                    </div>
+                                    <p id="processing-sites" class="text-3xl font-bold mt-2">0</p>
+                                </div>
+                                <div class="bg-gray-50 p-6 rounded-2xl border fade-in" style="animation-delay: 0.4s;">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-gray-500 font-medium">실패</h4>
+                                        <i data-lucide="x-circle" class="text-red-500"></i>
+                                    </div>
+                                    <p id="failed-sites" class="text-3xl font-bold mt-2">0</p>
+                                </div>
+                            </div>
+
+                            <!-- 작업 목록 및 로그 -->
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 fade-in" style="animation-delay: 0.5s;">
+                                    <div class="p-6 border-b border-gray-200">
+                                         <h3 class="text-lg font-semibold text-gray-800">대상 웹사이트 목록</h3>
+                                    </div>
+                                    <div class="overflow-x-auto max-h-[600px]">
+                                        <table class="w-full text-sm text-left">
+                                            <thead class="bg-gray-50 text-xs text-gray-600 uppercase sticky top-0">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3">기관/회사</th>
+                                                    <th scope="col" class="px-6 py-3">주요 내용</th>
+                                                    <th scope="col" class="px-6 py-3">상태</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="sites-table-body"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 fade-in" style="animation-delay: 0.6s;">
+                                     <div class="p-6 border-b border-gray-200">
+                                         <h3 class="text-lg font-semibold text-gray-800">실시간 로그</h3>
+                                    </div>
+                                    <div id="log-container" class="p-6 space-y-3 text-xs text-gray-600 max-h-[600px] overflow-y-auto">
+                                        <p class="text-gray-400">작업을 시작하면 로그가 표시됩니다.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            `;
+
+        const demoScript = document.createElement('script');
+        demoScript.innerHTML = `
+            (function() {
+                lucide.createIcons();
+
+                const sitesData = [
+                    { name: "금융감독원 (FSS)", desc: "금융회사 감독·검사, 금융소비자 보호", url: "http://www.fss.or.kr" },
+                    { name: "금융위원회 (FSC)", desc: "금융정책 수립, 제도 운영, 금융산업 규제", url: "http://www.fsc.go.kr" },
+                    { name: "한국은행 (BOK)", desc: "통화정책, 금융·경제통계, 보고서 제공", url: "http://www.bok.or.kr" },
+                    { name: "예금보험공사 (KDIC)", desc: "예금자 보호, 파산 금융기관 정리", url: "http://www.kdic.or.kr" },
+                    { name: "한국금융연구원 (KIF)", desc: "금융·경제 연구자료, 정책 제안", url: "http://www.kif.re.kr" },
+                    { name: "미래에셋은퇴연구소", desc: "은퇴·투자전략, 글로벌 자산배분", url: "https://retirement.miraeasset.com" },
+                    { name: "NH투자증권 100세시대연구소", desc: "고령화·은퇴 대비 금융 전략", url: "https://100life.nhqv.com" },
+                    { name: "KB경영연구소", desc: "가계·자산관리, 은퇴·부동산 리서치", url: "https://www.kbfg.com" },
+                    { name: "신한금융연구소", desc: "금융시장 분석, 자산관리·은퇴 리포트", url: "https://www.shinhangroup.com" },
+                    { name: "하나금융경영연구소", desc: "자산관리·재테크 전략, 은퇴 관련 연구", url: "https://www.hanafn.com" },
+                    { name: "우리금융경영연구소", desc: "금융시장 전망, 은퇴·자산관리 리포트", url: "https://www.woorifg.com" },
+                    { name: "MetLife (미국)", desc: "글로벌 생명·보장성 보험, 은퇴·연금", url: "https://www.metlife.com" },
+                    { name: "Prudential Financial (미국)", desc: "생명보험, 은퇴연금, 투자 솔루션", url: "https://www.prudential.com" },
+                    { name: "미국 증권거래위원회 (SEC)", desc: "증권시장 규제, 기업공시, 투자자 보호", url: "http://www.sec.gov" }
+                ];
+
+                const totalSitesEl = document.getElementById('total-sites');
+                const completedSitesEl = document.getElementById('completed-sites');
+                const processingSitesEl = document.getElementById('processing-sites');
+                const failedSitesEl = document.getElementById('failed-sites');
+                const sitesTableBody = document.getElementById('sites-table-body');
+                const logContainer = document.getElementById('log-container');
+                const startCrawlingBtn = document.getElementById('start-crawling-btn');
+
+                let completedCount = 0;
+                let processingCount = 0;
+                let failedCount = 0;
+
+                function initializeDashboard() {
+                    totalSitesEl.textContent = sitesData.length;
+                    sitesTableBody.innerHTML = '';
+                    sitesData.forEach((site, index) => {
+                        const row = document.createElement('tr');
+                        row.id = \`site-row-\${index}\`;
+                        row.className = 'bg-white border-b hover:bg-gray-50';
+                        row.innerHTML = \`
+                            <td class="px-6 py-4 font-medium text-gray-900">\${site.name}</td>
+                            <td class="px-6 py-4 text-gray-500">\${site.desc}</td>
+                            <td class="px-6 py-4">
+                                <span id="status-\${index}" class="status-badge status-pending">대기</span>
+                            </td>
+                        \`;
+                        sitesTableBody.appendChild(row);
+                    });
+                     updateSummary();
+                }
+
+                function addLog(message, type = 'info') {
+                    const now = new Date();
+                    const timestamp = \`\${now.getHours().toString().padStart(2, '0')}:\${now.getMinutes().toString().padStart(2, '0')}:\${now.getSeconds().toString().padStart(2, '0')}\`;
+                    const logEntry = document.createElement('div');
+                    logEntry.className = 'flex items-start gap-2';
+                    let icon = '';
+                    let textColor = 'text-gray-600';
+                    if (type === 'success') {
+                        icon = '<i data-lucide="check-circle" class="w-3.5 h-3.5 text-green-500 mt-0.5"></i>';
+                        textColor = 'text-green-700';
+                    } else if (type === 'error') {
+                        icon = '<i data-lucide="x-circle" class="w-3.5 h-3.5 text-red-500 mt-0.5"></i>';
+                        textColor = 'text-red-700';
+                    } else {
+                         icon = '<i data-lucide="arrow-right-circle" class="w-3.5 h-3.5 text-blue-500 mt-0.5"></i>';
+                    }
+                    logEntry.innerHTML = \`\${icon}<p class="flex-1"><span class="font-mono text-gray-400 mr-2">[\${timestamp}]</span> <span class="\${textColor}">\${message}</span></p>\`;
+                    if (logContainer.querySelector('p.text-gray-400')) {
+                        logContainer.innerHTML = '';
+                    }
+                    logContainer.appendChild(logEntry);
+                    lucide.createIcons();
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                }
+
+                function updateStatus(index, status, text) {
+                    const statusBadge = document.getElementById(\`status-\${index}\`);
+                    statusBadge.className = \`status-badge \${status}\`;
+                    statusBadge.textContent = text;
+                }
+
+                function updateSummary() {
+                    completedSitesEl.textContent = completedCount;
+                    processingSitesEl.textContent = processingCount;
+                    failedSitesEl.textContent = failedCount;
+                }
+
+                async function startCrawling() {
+                    startCrawlingBtn.disabled = true;
+                    startCrawlingBtn.innerHTML = \`<i data-lucide="loader" class="animate-spin"></i><span>처리 중...</span>\`;
+                    lucide.createIcons();
+                    addLog("크롤링 작업을 시작합니다...");
+                    completedCount = 0;
+                    processingCount = 0;
+                    failedCount = 0;
+                    initializeDashboard();
+
+                    for (let i = 0; i < sitesData.length; i++) {
+                        processingCount++;
+                        updateSummary();
+                        updateStatus(i, 'status-crawling', '수집 중');
+                        addLog(\`[\${sitesData[i].name}] 페이지 수집 시작...\`);
+                        await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500));
+
+                        if (Math.random() < 0.2) {
+                            failedCount++;
+                            processingCount--;
+                            updateStatus(i, 'status-failed', '실패');
+                            addLog(\`[\${sitesData[i].name}] 페이지 수집 실패. (오류: 타임아웃)\`, 'error');
+                            updateSummary();
+                            continue;
+                        }
+
+                        addLog(\`[\${sitesData[i].name}] 페이지 수집 완료.\`, 'success');
+                        updateStatus(i, 'status-processing', '처리 중');
+                        addLog(\`[\${sitesData[i].name}] 콘텐츠 분석 및 정제 시작...\`);
+                        await new Promise(resolve => setTimeout(resolve, Math.random() * 1500 + 500));
+                        addLog(\`[\${sitesData[i].name}] 의미 분석 및 벡터 임베딩 완료.\`, 'success');
+
+                        completedCount++;
+                        processingCount--;
+                        updateStatus(i, 'status-completed', '완료');
+                        addLog(\`[\${sitesData[i].name}] 작업 완료. 벡터 DB에 저장됨.\`);
+                        updateSummary();
+                    }
+
+                    addLog("모든 크롤링 작업이 종료되었습니다.", 'success');
+                    startCrawlingBtn.disabled = false;
+                    startCrawlingBtn.innerHTML = \`<i data-lucide="play-circle"></i><span>크롤링 시작</span>\`;
+                    lucide.createIcons();
+                }
+
+                startCrawlingBtn.addEventListener('click', startCrawling);
+                initializeDashboard();
+            })();
+            `;
+        document.body.appendChild(demoScript);
+      }
+
+      document.addEventListener('DOMContentLoaded', injectDemo);
+    </script>
+  </body>
 </html>
