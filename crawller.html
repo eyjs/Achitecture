@@ -77,6 +77,28 @@
         margin: 0 0 1rem 0;
       }
 
+      .rabbitmq-box {
+        background-color: #e3f2fd;
+        border: 2px dashed #2196f3;
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 1.5rem 0;
+      }
+      .rabbitmq-box h3 {
+        color: #0d47a1;
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 1.25rem;
+        font-weight: bold;
+      }
+      .rabbitmq-box ul {
+        list-style-position: inside;
+        padding-left: 0;
+      }
+      .rabbitmq-box li {
+        margin-bottom: 0.75rem;
+      }
+
       /* Demo Specific Styles */
       #demo-container {
         font-family: 'Inter', sans-serif, -apple-system;
@@ -166,7 +188,6 @@
                 <path d="M 0 0 L 10 5 L 0 10 z" fill="#555" />
               </marker>
             </defs>
-            <!-- Nodes -->
             <g>
               <rect x="10" y="30" width="150" height="90" rx="8" fill="#e3f2fd" stroke="#333" stroke-width="1" />
               <text x="85" y="65" text-anchor="middle" font-size="20px" fill="#333">🌐</text>
@@ -200,7 +221,6 @@
               </text>
               <text x="715" y="110" text-anchor="middle" font-size="12px" fill="#555">(검색, 분석, Q&A)</text>
             </g>
-            <!-- Arrows -->
             <line
               x1="165"
               y1="75"
@@ -234,7 +254,7 @@
       <section class="section">
         <h2>Gemini Flash 통합 시스템 아키텍처</h2>
         <div class="diagram-container">
-          <svg width="1100" height="500" viewBox="0 0 1100 500" xmlns="http://www.w3.org/2000/svg">
+          <svg width="1100" height="550" viewBox="0 0 1100 550" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <marker
                 id="arrow"
@@ -246,6 +266,17 @@
                 orient="auto-start-reverse"
               >
                 <path d="M 0 0 L 10 5 L 0 10 z" fill="#4285f4" />
+              </marker>
+              <marker
+                id="arrow-future"
+                viewBox="0 0 10 10"
+                refX="8"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#e91e63" />
               </marker>
             </defs>
             <rect
@@ -264,7 +295,7 @@
             </text>
             <rect
               x="580"
-              y="230"
+              y="280"
               width="440"
               height="250"
               rx="20"
@@ -273,7 +304,7 @@
               stroke-width="2"
               stroke-dasharray="8 4"
             />
-            <text x="800" y="470" text-anchor="middle" font-weight="bold" font-size="16" fill="#581c87">
+            <text x="800" y="520" text-anchor="middle" font-weight="bold" font-size="16" fill="#581c87">
               외부 파트너 영역 (ex 벨루가)
             </text>
             <rect x="50" y="60" width="150" height="100" rx="10" fill="white" stroke="#2196f3" stroke-width="2" />
@@ -281,9 +312,7 @@
             <text x="125" y="110" text-anchor="middle" font-size="11">40개 금융사이트</text>
             <text x="125" y="130" text-anchor="middle" font-size="11">+ 타겟 주제</text>
             <rect x="250" y="60" width="300" height="150" rx="15" fill="white" stroke="#4caf50" stroke-width="2" />
-            <text x="400" y="90" text-anchor="middle" font-weight="bold" font-size="16">
-              Python 크롤러 + Gemini Flash
-            </text>
+            <text x="400" y="90" text-anchor="middle" font-weight="bold" font-size="16">Py 크롤러 + Gemini Flash</text>
             <rect x="270" y="110" width="120" height="80" rx="8" fill="#f3e5f5" stroke="#9c27b0" />
             <text x="330" y="135" text-anchor="middle" font-weight="bold" font-size="11">경로 결정</text>
             <text x="330" y="150" text-anchor="middle" font-size="9">링크 관련성 분석</text>
@@ -300,40 +329,71 @@
             <text x="700" y="135" text-anchor="middle" font-size="11">노이즈 제거</text>
             <text x="700" y="155" text-anchor="middle" font-size="11">초기 정제</text>
             <text x="700" y="175" text-anchor="middle" font-size="11">메타데이터 추출</text>
-            <rect x="250" y="280" width="300" height="80" rx="10" fill="#fce4ec" stroke="#e91e63" stroke-width="2" />
-            <text x="400" y="310" text-anchor="middle" font-weight="bold" font-size="16">데이터 전달 (RabbitMQ)</text>
-            <text x="400" y="335" text-anchor="middle" font-size="12">정제된 데이터 + 메타정보</text>
-            <rect x="600" y="250" width="400" height="200" rx="15" fill="white" stroke="#9333ea" stroke-width="2" />
-            <text x="800" y="280" text-anchor="middle" font-weight="bold" font-size="16">
-              .NET 백엔드 + Gemini Flash
-            </text>
-            <rect x="620" y="300" width="170" height="130" rx="8" fill="#e9d5ff" stroke="#8b5cf6" />
-            <text x="705" y="325" text-anchor="middle" font-weight="bold" font-size="11">구조화 엔진</text>
-            <text x="705" y="345" text-anchor="middle" font-size="9">Gemini Flash API</text>
-            <text x="705" y="360" text-anchor="middle" font-size="9">복잡한 데이터 추출</text>
-            <text x="705" y="375" text-anchor="middle" font-size="9">JSON 구조화</text>
-            <text x="705" y="390" text-anchor="middle" font-size="9">품질 검증</text>
-            <text x="705" y="405" text-anchor="middle" font-size="9">~3K tokens</text>
-            <rect x="810" y="300" width="170" height="130" rx="8" fill="#e9d5ff" stroke="#8b5cf6" />
-            <text x="895" y="325" text-anchor="middle" font-weight="bold" font-size="11">임베딩 & 저장</text>
-            <text x="895" y="345" text-anchor="middle" font-size="9">벡터 생성</text>
-            <text x="895" y="360" text-anchor="middle" font-size="9">Vector DB 저장</text>
-            <text x="895" y="375" text-anchor="middle" font-size="9">Meta DB 저장</text>
-            <text x="895" y="390" text-anchor="middle" font-size="9">인덱싱</text>
+
+            <g opacity="0.8">
+              <rect
+                x="250"
+                y="300"
+                width="300"
+                height="80"
+                rx="10"
+                fill="#fce4ec"
+                stroke="#e91e63"
+                stroke-width="2"
+                stroke-dasharray="5 5"
+              />
+              <text x="400" y="320" text-anchor="middle" font-weight="bold" font-size="12" fill="#e91e63">
+                (도입 예정)
+              </text>
+              <text x="400" y="340" text-anchor="middle" font-weight="bold" font-size="16">데이터 전달 (RabbitMQ)</text>
+              <text x="400" y="365" text-anchor="middle" font-size="12">정제된 데이터 + 메타정보</text>
+            </g>
+
+            <rect x="600" y="300" width="400" height="200" rx="15" fill="white" stroke="#9333ea" stroke-width="2" />
+            <text x="800" y="330" text-anchor="middle" font-weight="bold" font-size="16">백엔드 + Gemini Flash</text>
+            <rect x="620" y="350" width="170" height="130" rx="8" fill="#e9d5ff" stroke="#8b5cf6" />
+            <text x="705" y="375" text-anchor="middle" font-weight="bold" font-size="11">구조화 엔진</text>
+            <text x="705" y="395" text-anchor="middle" font-size="9">Gemini Flash API</text>
+            <text x="705" y="410" text-anchor="middle" font-size="9">복잡한 데이터 추출</text>
+            <text x="705" y="425" text-anchor="middle" font-size="9">JSON 구조화</text>
+            <text x="705" y="440" text-anchor="middle" font-size="9">품질 검증</text>
+            <text x="705" y="455" text-anchor="middle" font-size="9">~3K tokens</text>
+            <rect x="810" y="350" width="170" height="130" rx="8" fill="#e9d5ff" stroke="#8b5cf6" />
+            <text x="895" y="375" text-anchor="middle" font-weight="bold" font-size="11">임베딩 & 저장</text>
+            <text x="895" y="395" text-anchor="middle" font-size="9">벡터 생성</text>
+            <text x="895" y="410" text-anchor="middle" font-size="9">Vector DB 저장</text>
+            <text x="895" y="425" text-anchor="middle" font-size="9">Meta DB 저장</text>
+            <text x="895" y="440" text-anchor="middle" font-size="9">인덱싱</text>
+
             <path d="M 200 110 H 250" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)" />
             <path d="M 550 135 H 600" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)" />
-            <path d="M 400 210 V 280" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)" />
-            <path
-              d="M 700 210 C 700 245, 550 245, 550 280"
-              stroke="#4285f4"
-              stroke-width="2"
-              marker-end="url(#arrow)"
-            />
-            <path d="M 550 320 H 600" stroke="#4285f4" stroke-width="2" marker-end="url(#arrow)" />
             <text x="225" y="100" font-size="10" fill="#4285f4">설정 로드</text>
             <text x="575" y="125" font-size="10" fill="#4285f4">파일 처리</text>
-            <text x="420" y="255" font-size="10" fill="#4285f4">크롤링 데이터</text>
-            <text x="575" y="310" font-size="10" fill="#4285f4">백엔드 처리</text>
+
+            <path
+              d="M 400 210 V 300"
+              stroke="#e91e63"
+              stroke-width="2"
+              stroke-dasharray="5 5"
+              marker-end="url(#arrow-future)"
+            />
+            <path
+              d="M 700 210 C 700 260, 550 260, 550 300"
+              stroke="#e91e63"
+              stroke-width="2"
+              fill="none"
+              stroke-dasharray="5 5"
+              marker-end="url(#arrow-future)"
+            />
+            <path
+              d="M 550 340 H 600"
+              stroke="#e91e63"
+              stroke-width="2"
+              stroke-dasharray="5 5"
+              marker-end="url(#arrow-future)"
+            />
+            <text x="420" y="265" font-size="10" fill="#e91e63">크롤링 데이터 (예정)</text>
+            <text x="575" y="330" font-size="10" fill="#e91e63">백엔드 처리 (예정)</text>
           </svg>
         </div>
         <div class="gemini-advantage">
@@ -348,15 +408,44 @@
         </div>
       </section>
 
+      <section class="section">
+        <h2>RabbitMQ 도입의 기대효과 🐇</h2>
+        <div class="rabbitmq-box">
+          <h3>메시지 큐를 통한 시스템 안정성 및 확장성 확보</h3>
+          <p>
+            현재 아키텍처에는 포함되어 있지 않지만, RabbitMQ와 같은 메시지 큐 시스템을 도입하면 다음과 같은 장점을 통해
+            시스템을 더욱 견고하고 확장성 있게 만들 수 있습니다.
+          </p>
+          <ul>
+            <li>
+              <strong>비동기 처리 및 시스템 분리:</strong> 크롤러(생산자)는 수집한 데이터를 RabbitMQ에 전달하고 즉시
+              다음 작업을 수행할 수 있습니다. 데이터를 처리하는 .NET 백엔드(소비자)가 일시적으로 느려지거나 장애가
+              발생해도 크롤러의 수집 속도에 영향을 주지 않습니다.
+            </li>
+            <li>
+              <strong>안정성 및 데이터 보존:</strong> 만약 .NET 백엔드 시스템이 다운되더라도, 크롤링된 데이터는 RabbitMQ
+              큐에 안전하게 보관됩니다. 시스템이 복구되면 큐에 쌓여있던 데이터부터 순차적으로 처리하므로 데이터 유실을
+              방지할 수 있습니다.
+            </li>
+            <li>
+              <strong>확장성 및 부하 분산:</strong> 향후 크롤링 대상을 늘리거나 데이터 처리량을 높여야 할 때, 크롤러나
+              .NET 백엔드 프로세서의 수를 쉽게 늘릴 수 있습니다. RabbitMQ는 여러 소비자에게 작업을 효율적으로 분배하여
+              시스템 전체의 처리량을 유연하게 조절합니다.
+            </li>
+          </ul>
+        </div>
+      </section>
+
       <section id="live-demo" class="section">
         <h2>Live Demo (샘플)</h2>
         <p class="mb-6">
           아래 데모는 전체 시스템의 작동 방식을 시뮬레이션합니다. '크롤링 시작' 버튼을 눌러 지정된 사이트 목록에서
           데이터 수집을 시작하고, 각 사이트의 상태가 실시간으로 변경되는 과정을 확인하세요.
         </p>
-        <div id="demo-container" class="bg-gray-50 p-4 sm:p-6 lg:p-8 rounded-xl shadow-inner border border-gray-200">
-          <!-- Demo will be injected here -->
-        </div>
+        <div
+          id="demo-container"
+          class="bg-gray-50 p-4 sm:p-6 lg:p-8 rounded-xl shadow-inner border border-gray-200"
+        ></div>
         <div class="cost-breakdown">
           <h4>Gemini Flash 월별 비용 분석 (40개 사이트)</h4>
           <p><strong>토큰 단가:</strong> $0.000075/1K input tokens, $0.0003/1K output tokens</p>
@@ -381,7 +470,6 @@
 
         demoContainer.innerHTML = `
                 <div class="flex flex-col md:flex-row min-h-screen w-full">
-                    <!-- 사이드바 -->
                     <aside class="w-full md:w-64 bg-white border-r border-gray-200 p-6 flex-shrink-0 rounded-l-xl">
                         <div class="flex items-center gap-3 mb-8">
                             <div class="bg-indigo-600 text-white p-2 rounded-lg">
@@ -414,7 +502,6 @@
                         </div>
                     </aside>
 
-                    <!-- 메인 콘텐츠 -->
                     <main class="flex-1 p-4 md:p-8 bg-white rounded-r-xl">
                         <div class="max-w-7xl mx-auto">
                             <header class="mb-8">
@@ -422,7 +509,6 @@
                                 <p class="text-gray-500 mt-1">지정된 웹사이트에서 최신 정보를 수집, 처리 및 분석합니다.</p>
                             </header>
 
-                            <!-- 컨트롤 패널 -->
                             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-8 fade-in">
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                     <div>
@@ -436,7 +522,6 @@
                                 </div>
                             </div>
 
-                            <!-- 요약 정보 -->
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                                 <div class="bg-gray-50 p-6 rounded-2xl border fade-in" style="animation-delay: 0.1s;">
                                     <div class="flex items-center justify-between">
@@ -468,7 +553,6 @@
                                 </div>
                             </div>
 
-                            <!-- 작업 목록 및 로그 -->
                             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 fade-in" style="animation-delay: 0.5s;">
                                     <div class="p-6 border-b border-gray-200">
